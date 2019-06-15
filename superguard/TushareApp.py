@@ -41,6 +41,7 @@ class ts_app:
         此处的token请勿修改
         fields建议不要改动，自定义的字段请在append_table中添加
         '''
+        self.log = False #关闭print语句
         token_file = BASE_DIR+r'\Config\tushare_token.cfg'
         with open(token_file, 'r') as fh:
             content = fh.read()
@@ -54,7 +55,7 @@ class ts_app:
         
             self.save_path = 'avg_info.csv'
         except:
-            print('tushare初始化失败，请确保parameter.cfg放在根目录下')
+            print('tushare初始化失败，请确保tushare_token.cfg路径和内容正确')
     def GetPrice(self, ID,cur_day = 0):
         '''
         获取指定一天的收盘价，默认获取最近一天的价格
@@ -235,7 +236,8 @@ class ts_app:
                     info = self.pro.daily_basic(ts_code=ID, trade_date=day, fields='trade_date,turnover_rate,pe_ttm,pb')
                     data = pd.concat([data, info], axis = 0)
                     time.sleep(0.2)
-                    print(day)
+                    if self.log:
+                        print(day)
                 except:
                     pass
             cur_day += timedelta(1)
@@ -296,7 +298,8 @@ class ts_app:
             if data.empty != True:
                 break
         if data.empty == True:
-            print('no data')
+            if self.log:
+                print('no data')
             return 0
         
         while cur_day < stop_day:
@@ -306,7 +309,8 @@ class ts_app:
                     info = self.pro.daily_basic(ts_code=ID, trade_date=day, fields='trade_date,turnover_rate,pe_ttm,pb')
                     data = pd.concat([data, info], axis = 0)
                     time.sleep(0.2)
-                    print(cur_day)
+                    if self.log:
+                        print(cur_day)
                 except:
                     pass
             cur_day += timedelta(1)
@@ -333,7 +337,8 @@ class ts_app:
         per_id = int(total_len * 0.1)
         suf_id = int(total_len * 0.9)
         data_left = data_copy[per_id:suf_id] #筛除牛市和熊市的影响
-        print(len(data_copy), len(data_left))
+        if self.log:
+            print(len(data_copy), len(data_left))
         
         pe_ttm = data_left['pe_ttm'] #获取PE的平均水平
         turnover = data_left['turnover_rate']
@@ -383,7 +388,8 @@ class ts_app:
 #        print(df_result)
 #        return
         if df_result.empty == True:
-            print('没有这条记录，重新更新')
+            if self.log:
+                print('没有这条记录，重新更新')
             today = datetime.now()
             default_data = {'id':id_str,
                             'year':years,
@@ -419,7 +425,8 @@ class ts_app:
 #            print(records)
             records.to_csv(file_name,index =False)
         else:
-            print('已有记录，直接在原有基础上更新即可')
+            if self.log:
+                print('已有记录，直接在原有基础上更新即可')
             '''
             此处有bug
             loc[0,'xxx']已经变了，首次是0，之后都是1了。。
@@ -434,14 +441,16 @@ class ts_app:
             today = datetime.now()
 #            print(start_day, today)
             if TimeConverter.dtime2str(start_day) == TimeConverter.dtime2str(today):
-                print('already latest')
+                if self.log:
+                    print('already latest')
                 return 0
             
 #            print(start_day)
 #            print('old value:',old_turnover, old_pe, old_pb)
             append_list = self._DailyRecord(id_str,TimeConverter.dtime2str(start_day))
             if isinstance(append_list,int): #最近更新的那一天没有记录（周末或者节假日）
-                print('already latest')
+                if self.log:
+                    print('already latest')
                 return
             turnover_add = append_list['turnover_rate'].sum()
             pe_add = append_list['pe_ttm'].sum()
