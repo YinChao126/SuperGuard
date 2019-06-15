@@ -11,8 +11,10 @@ from pandas import DataFrame
 import datetime
 
 import SinaApp
+import TushareApp
 import IdConvert
 import TimeConverter as tc
+
 
 #1. path
 BASE = os.path.split(os.path.realpath(__file__))[0]
@@ -28,9 +30,10 @@ raw_record = pd.read_csv(hold_record_file)
 print(raw_record)
 stock_list = raw_record['id']
 
-sina = SinaApp.SinaApp()
+ts = TushareApp.ts_app()
 for s in stock_list:
     s = s.__int__()
-    s = IdConvert.front2id(str(s))
-    price = sina.ClosePrice(s,'20190610')
-    print(price)
+    print(s)
+    s = IdConvert.tail2id(str(s))
+    print(ts.GetPrice(s))
+

@@ -11,10 +11,10 @@ from datetime import timedelta
 import time
 
 import os,sys
-BASE_DIR=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.split(os.path.realpath(__file__))[0] #cur excute dir
 sys.path.append(BASE_DIR)
 
-import Miscellaneous.TimeConverter as TimeConverter
+import TimeConverter
 
 class ts_app:
     '''
@@ -41,7 +41,7 @@ class ts_app:
         此处的token请勿修改
         fields建议不要改动，自定义的字段请在append_table中添加
         '''
-        token_file = os.path.dirname(BASE_DIR)+r'\parameter.cfg'
+        token_file = BASE_DIR+r'\Config\tushare_token.cfg'
         with open(token_file, 'r') as fh:
             content = fh.read()
         try:
@@ -648,7 +648,8 @@ if __name__ == '__main__':
 #    a = app.AvgExchangeInfo(l, '20181111')
 #    print(a)
     
-    b = app.GetPrice(l,'20180101')
+    b = app.GetPrice(l)
+    b=app.AvgExchangeInfo(l,3)
     print(b)
 #    app.update_one(l,2)
 #    for s in range(1,6):

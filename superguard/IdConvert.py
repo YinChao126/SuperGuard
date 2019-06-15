@@ -106,4 +106,5 @@ def get_id_type(id):
         print('股票id输入非法')
     return 1
 
-print(get_id_type('000651.sz'))
+if __name__ == '__main__':
+    print(get_id_type('000651.sz'))
