@@ -22,6 +22,7 @@ class ts_app:
     功能：利用tushare_pro数据接口实现的相关应用功能
     更新时间：2010-1-1
     应用函数一览表：
+    Daily:获得个股的实时行情（现价、涨跌幅、换手率） （非常重要）
     BasicInfo:获得指定个股最新的基础情况（收盘价、PE、换手率、股本数等）（非常重要）
     GetPrice:获得指定个股指定一天的收盘价，如果当天没有则自动往前找
     GetOneYearFinanceTable:获得指定个股指定一年的财务统计数据
@@ -195,6 +196,20 @@ class ts_app:
         out = out.sort_values(by=['年度'])
         out.index = range(len(out))
         return out
+    
+    def Daily(self, ID):
+        '''
+        输入一个个股，获得一个DataFrame格式基本情况列表
+        @输入：
+        ID(str) xxxxxx.SH
+        @返回：cur_price, pct_chg(现价和涨跌幅度)
+        '''
+        stop_day = datetime.now()
+        start_day = stop_day - timedelta(6*22)
+        start_day = TimeConverter.dtime2str(start_day)
+        data = self.pro.query('daily',ts_code='601012.SH',start_date=start_day)
+        return data.iloc[0]['close'], data.iloc[0]['pct_chg']
+    
     def BasicInfo(self, ID):
         '''
         输入一个个股和开始日期，获得一个DataFrame格式基本情况列表
@@ -653,13 +668,14 @@ if __name__ == '__main__':
     l = '600660.SH'
     id_str = '000651.SZ'
     app = ts_app()
+    price, change = app.Daily(id_str)
 #    app.update()
 #    a = app.AvgExchangeInfo(l, '20181111')
 #    print(a)
     
-    b = app.GetPrice(l)
-    b=app.AvgExchangeInfo(l,3)
-    print(b)
+#    b = app.GetPrice(l)
+#    b=app.AvgExchangeInfo(l,3)
+#    print(b)
 #    app.update_one(l,2)
 #    for s in range(1,6):
 #        app.update_one(id_str,s)
