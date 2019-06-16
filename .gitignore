@@ -105,3 +105,4 @@ venv.bak/
 
 # user's define
 Config/
+output/

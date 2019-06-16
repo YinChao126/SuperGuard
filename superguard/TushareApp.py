@@ -42,7 +42,7 @@ class ts_app:
         此处的token请勿修改
         fields建议不要改动，自定义的字段请在append_table中添加
         '''
-        self.log = False #关闭print语句
+        self.log = True #关闭print语句
         token_file = BASE_DIR+r'\Config\tushare_token.cfg'
         with open(token_file, 'r') as fh:
             content = fh.read()
@@ -71,7 +71,7 @@ class ts_app:
         else:
             cur_day = TimeConverter.str2dtime(cur_day)
         if cur_day.year < 1991:
-            return 0
+            return 0, 0
         while True:
             day = TimeConverter.dtime2str(cur_day)
             data = self.pro.daily_basic(ts_code=ID, trade_date=day, fields='trade_date,close')       
@@ -80,7 +80,7 @@ class ts_app:
             cur_day -= timedelta(1) 
             cnt -= 1
             if cnt < 0:
-                return 0
+                return 0, 0
         price = data.iloc[0]['close']
 #        print(ID, day, price)
         return price, day
@@ -205,7 +205,7 @@ class ts_app:
         @返回：cur_price, pct_chg(现价和涨跌幅度)
         '''
         stop_day = datetime.now()
-        start_day = stop_day - timedelta(6*22)
+        start_day = stop_day - timedelta(3*22) #一次性获取最近3个月数据
         start_day = TimeConverter.dtime2str(start_day)
         data = self.pro.query('daily',ts_code='601012.SH',start_date=start_day)
         return data.iloc[0]['close'], data.iloc[0]['pct_chg']
@@ -250,7 +250,7 @@ class ts_app:
                     day = TimeConverter.dtime2str(cur_day)
                     info = self.pro.daily_basic(ts_code=ID, trade_date=day, fields='trade_date,turnover_rate,pe_ttm,pb')
                     data = pd.concat([data, info], axis = 0)
-                    time.sleep(0.2)
+                    time.sleep(0.3)
                     if self.log:
                         print(day)
                 except:

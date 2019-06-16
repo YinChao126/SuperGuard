@@ -8,6 +8,7 @@ import os
 import json
 from datetime import datetime
 from datetime import timedelta
+import pandas as pd
 import TimeConverter
 import IdConvert
 
@@ -21,16 +22,15 @@ class Analyse:
     API一览表：
     Estimation：实现个股的估值功能
     AlarmGuid: 实现预警监测功能
-    HoldRecordAnalyse: 实现持仓完整分析，并自动更新数据库
     '''
     def __init__(self):
         self.log = False #关闭log
         
         BASE = os.path.split(os.path.realpath(__file__))[0]
         self.cfg_file = BASE + r'\Config\threshold.json' 
-        self.rate_th = []
-        self.turnover_th = []
-        self.price_est = []
+        self.rate_th = [] #涨跌幅阈值【下限，上限】
+        self.turnover_th = [] #换手率阈值【下限，上限】
+        self.price_est = [] #估值预警线【低估，高估】
         with open(self.cfg_file, 'r') as fh: #读取配置参数
             parameter = json.load(fh)
             self.rate_th = parameter['rate_th']
@@ -38,9 +38,9 @@ class Analyse:
             self.price_est = parameter['price_est']
         
         self.ts = TushareApp.ts_app()  
-        
-        self.whitelist = []
-        
+        self.hold_record = [] #用户持仓记录
+        self.whitelist = [] #警报白名单，防止多次预警
+    
     def AlarmMask(self, id):
         '''
         如果已经预警，则加入白名单，停牌后会自动释放（中午11点半，下午3点）
@@ -173,6 +173,7 @@ class Analyse:
             
             
             print('开始估值...')
+
         '''
         静态估值（年报+平均市盈率+平均增长率估值）： 
         年尾价格 = 历史加权平均市盈率 * 去年年报上除非每股收益 * （1 + 增长率）

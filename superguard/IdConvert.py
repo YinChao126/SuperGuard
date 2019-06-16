@@ -59,7 +59,7 @@ def tail2id(id):
         print('股票id输入非法')
         return 0
     prefix = id[:3]
-    if prefix == '600' or prefix == '601' or prefix == '603' or prefix == '019':
+    if prefix == '600' or prefix == '601' or prefix == '603' or prefix == '019' or prefix == '510':
         return id+'.SH'
     if prefix == '000' or prefix == '002' or prefix == '300' or prefix == '159':
         return id+'.SZ'
@@ -74,6 +74,9 @@ def get_id_type(id):
     3指数
     4基金(含指数基金和债券基金)
     '''
+    if len(id) == 6:
+        id = tail2id(id)
+        
     if len(id) != 9:
         print('股票id输入非法')
         return -1
