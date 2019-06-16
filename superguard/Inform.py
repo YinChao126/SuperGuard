@@ -27,7 +27,7 @@ class Inform:
         return msg.sid
 
 if __name__ == '__main__':
-    msg = '我爱我的宝宝'
+    msg = 'hello,world'
     phone = '15712091836'
     app = Inform()
     app.SendMsg(phone, msg)

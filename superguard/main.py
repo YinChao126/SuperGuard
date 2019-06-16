@@ -7,9 +7,8 @@ Created on Sat Jun 15 08:47:41 2019
 import os
 import pandas as pd
 
-import Algorithm
+import Analyse
 import TushareApp
-import IdConvert
 
 def ReadUserHoldRecord():
     '''
@@ -22,25 +21,10 @@ def ReadUserHoldRecord():
 
 
 ts = TushareApp.ts_app()
-alg = Algorithm.Algorithm()
+alg = Analyse.Analyse()
 
 raw_record = ReadUserHoldRecord()
 stock_list = raw_record['id']
 
-import time
-cnt = 0
-while cnt < 10:
-    cnt += 1
-    print(cnt)
-    time.sleep(1)
-    
-    for s in stock_list:
-        s = s.__int__()
-        s = IdConvert.tail2id(str(s))
-        if alg.check(ts.BasicInfo(s)):
-            print(ts.BasicInfo(s))
-            alg.alarm_mask(s)
-            
-    if cnt == 5:
-        alg.reset()
+alg.AlarmGuid(stock_list)
 

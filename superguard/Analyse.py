@@ -9,10 +9,20 @@ import json
 from datetime import datetime
 from datetime import timedelta
 import TimeConverter
+import IdConvert
 
 import TushareApp
 
-class Algorithm:
+class Analyse:
+    '''
+    类名：Analyse
+    功能：实现给定标的的分析功能，包括预警分析，持仓结构分析，收益率分析，并提出建议
+    更新时间：2019-6-16
+    API一览表：
+    Estimation：实现个股的估值功能
+    AlarmGuid: 实现预警监测功能
+    HoldRecordAnalyse: 实现持仓完整分析，并自动更新数据库
+    '''
     def __init__(self):
         self.log = False #关闭log
         
@@ -31,18 +41,40 @@ class Algorithm:
         
         self.whitelist = []
         
-    def alarm_mask(self, id):
+    def AlarmMask(self, id):
         '''
         如果已经预警，则加入白名单，停牌后会自动释放（中午11点半，下午3点）
         '''        
         self.whitelist.append(id)
         
-    def reset(self):
+    def AlarmReset(self):
         '''
         重置状态，将白名单剔除
         '''
         self.whitelist = []
     
+    def AlarmGuid(self, item_list):
+        '''
+        给定一组监控标的的参数，自动启动线程进行监视
+        备注：输入参数是numpy类型，之后要统一成list！
+        '''
+        import time
+        cnt = 0
+        while cnt < 10:
+            cnt += 1
+            print(cnt)
+            time.sleep(1)
+            
+            for s in item_list:
+                s = s.__int__()
+                s = IdConvert.tail2id(str(s))
+                if self.check(self.ts.BasicInfo(s)):
+                    print(self.ts.BasicInfo(s))
+                    self.AlarmMask(s)
+                    
+            if cnt == 5:
+                self.AlarmReset()
+                
     def check(self, item):
         '''
         辅助函数：
@@ -217,8 +249,9 @@ class Algorithm:
     
 if __name__ == '__main__':
     ts = TushareApp.ts_app()
-    alg = Algorithm()
+    alg = Analyse()
     test = ts.BasicInfo('601012.SH')
     app = alg.check(test)
     print(app)
-#    est_price, flow_level = alg.Estimation('600660.SH')
+    est_price, flow_level = alg.Estimation('600377.SH',0.1,0.7)
+    print(est_price, flow_level)
