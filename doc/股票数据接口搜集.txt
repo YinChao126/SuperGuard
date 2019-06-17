@@ -1,0 +1,17 @@
+https://www.cnblogs.com/seacryfly/articles/stock.html
+
+实时数据：
+1. 提供实时K线和资金量（新浪）
+http://hq.sinajs.cn/list=sh600660     #个股
+http://hq.sinajs.cn/list=s_sh000001   #上证指数
+http://hq.sinajs.cn/list=s_sz399001   #深成指数
+
+2. 提供日/周/月K线图（gif）
+http://image.sinajs.cn/newchart/daily/n/sh601006.gif
+http://image.sinajs.cn/newchart/weekly/n/sh601006.gif
+http://image.sinajs.cn/newchart/monthly/n/sh601006.gif
+
+
+历史数据：
+1. 提供日K线和资金量
+http://money.finance.sina.com.cn/corp/go.php/vMS_MarketHistory/stockid/600660.phtml

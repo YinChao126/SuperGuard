@@ -53,6 +53,34 @@ class SinaApp:
         self.compatible = True #默认打开，方便使用,想要禁止，请设置为False
         self.log = True #调试语句和显示语句使能开关
     
+    def RtQuant(self, str_id):
+        '''
+        获取指定ID当前的量比
+        '''
+        today_vol = self.RtData([str_id])
+        cur_time = today_vol.iloc[0]['time']
+        today_vol = today_vol.iloc[0]['vol']
+        t = cur_time.split(':')
+        cur_second = int(t[0]) * 60 + int(t[1]) - 570
+        if cur_second > 120 and cur_second <= 210: #中午午休
+            cur_second = 120
+        elif cur_second > 210 and cur_second <= 330:#下午开盘
+            cur_second -= 90
+        elif cur_second > 330:#收盘以后
+            cur_second = 240
+        cur_vol_per = int(today_vol) / cur_second #现手率
+        
+        #获取连续5天的现手率
+        self.update_one(str_id)
+        file_name = self.data_path + str_id + '.csv'
+        df = pd.read_csv(file_name)
+        df = df[-5:]
+        total_vol = df['volume'].sum()
+        hist_vol_per = total_vol / 5 / 240
+        quant = round(cur_vol_per / hist_vol_per,2)
+        return quant
+        
+        
     def HistoryList(self, str_id, day=22):
         '''
         获取指定个股连续n天（默认一个月）的基础交易数据（价格，成交量）
@@ -83,16 +111,17 @@ class SinaApp:
         high = []
         low = []
         rate = []
-        money = []
+        vol = []
+        cur_time = []
         
         for i in range(len(data)-1):
-#            
             info = data[i].split(',')
             p_open = info[1]
             p_cur = info[3]
             p_high = info[4]
             p_low = info[5]
-            p_money = str(int(float(info[9])))
+            p_vol = str(int(float(info[8])))
+            p_time = info[-2]
             r = round(((float(p_cur) - float(p_open)) / float(p_open))*100, 2)
             r = str(r)
             cur_open.append(p_open)
@@ -100,7 +129,8 @@ class SinaApp:
             high.append(p_high)
             low.append(p_low)
             rate.append(r)
-            money.append(p_money)
+            vol.append(p_vol)
+            cur_time.append(p_time)
         data = {
                 'id':str_id_list,
                 'open':cur_open,
@@ -108,10 +138,11 @@ class SinaApp:
                 'high':high,
                 'low':low,
                 'rate':rate,
-                'money':money
+                'vol':vol,
+                'time':cur_time
                 }
         d = pd.DataFrame(data)
-        print(d)
+#        print(d)
         return d
         
         
@@ -359,13 +390,17 @@ if __name__ == '__main__':
     '''
     test = SinaApp()
     
-    #获取实时价格
+#    获取实时价格
 #    test.RtPrice('sh601012')
     
-    #批量获取实时交易数据
-    test.RtData(['sh601012','sh600377'])
+#    获取实时量比
+#    a = test.RtQuant('sh600887')
+#    print(a)
     
-#    test.update_one('sh000001')
+#    #批量获取实时交易数据
+#    test.RtData(['sh601012'])
+    
+#    test.update_one('sh510300')
 #    
 #    ll = ['sh000001','sh510300','sz000651','sz002597','sh600104','sh600377','sh600660','sh601012','sh019536']
 #    
@@ -373,7 +408,7 @@ if __name__ == '__main__':
 #    test.UpdateKday(ll)
 #    
 #    #获取指定一天的数据
-#    a = test.GetInfo('sh600660','2019/01/08')
+#    a = test.GetInfo('sh510300','2019/01/08')
 #
 #    #获取指定一天的价格
 #    a = test.ClosePrice('sh600660','2019-01-08')
