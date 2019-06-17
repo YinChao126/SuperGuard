@@ -19,7 +19,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) #father
 BASE_DIR = os.path.split(os.path.realpath(__file__))[0] #cur excute dir
 sys.path.append(BASE_DIR)
 #
-
+import IdConvert
 import TimeConverter
 class SinaApp:
     '''
@@ -57,6 +57,16 @@ class SinaApp:
         '''
         获取指定ID当前的量比
         '''
+        if len(str_id) == 8:
+            pass
+        elif len(str_id) == 6:
+            str_id = IdConvert.front2id(str_id)
+        elif len(str_id) == 9:
+            str_id = IdConvert.front2id(str_id[:6])
+        else:
+            print('[RtQuant]错误，id输入非法')
+            return 0
+        
         today_vol = self.RtData([str_id])
         cur_time = today_vol.iloc[0]['time']
         today_vol = today_vol.iloc[0]['vol']
@@ -94,7 +104,7 @@ class SinaApp:
     def RtData(self, str_id_list):
         '''
         获取指定个股实时交易详情，以DataFrame形式返回
-        输入必须是list类型的多个参数
+        输入必须是list类型的多个参数，单个id格式为：sh600660
         返回均为dataframe格式
         '''
         
@@ -148,7 +158,9 @@ class SinaApp:
         
     def RtPrice(self, str_id):
         '''
-        获取指定个股当前的实时交易现价
+        描述：获取指定个股当前的实时交易现价
+        输入：600660, sh600660, 600660.SH都可以，只接受str类型，只能输入一个
+        输出：当前实时股价
         
         sina数据格式定义
         # 参数定义
@@ -183,6 +195,15 @@ class SinaApp:
         # 27Sell5_quant
         # 28Sell5_price
         '''
+        if len(str_id) == 8:
+            pass
+        elif len(str_id) == 6:
+            str_id = IdConvert.front2id(str_id)
+        elif len(str_id) == 9:
+            str_id = IdConvert.front2id(str_id[:6])
+        else:
+            print('[RtPrice]错误，id输入非法')
+            return 0
         url = 'http://hq.sinajs.cn/list='+str_id
         page = str(urllib.request.urlopen(url).read())
         data = page.split(',')
@@ -191,7 +212,6 @@ class SinaApp:
         p_high = data[4]
         p_low = data[5]
         p_money = data[9]
-        print(p_cur,p_money)
         return p_cur
         
         
@@ -391,11 +411,11 @@ if __name__ == '__main__':
     test = SinaApp()
     
 #    获取实时价格
-#    test.RtPrice('sh601012')
-    
+    a = test.RtPrice('601012.SH')
+    print(a)
 #    获取实时量比
-#    a = test.RtQuant('sh600887')
-#    print(a)
+    a = test.RtQuant('sh600887')
+    print(a)
     
 #    #批量获取实时交易数据
 #    test.RtData(['sh601012'])

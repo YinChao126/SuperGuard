@@ -13,6 +13,7 @@ import TimeConverter
 import IdConvert
 
 import TushareApp
+import SinaApp
 
 class Analyse:
     '''
@@ -38,6 +39,7 @@ class Analyse:
             self.price_est = parameter['price_est']
         
         self.ts = TushareApp.ts_app()  
+        self.sina = SinaApp.SinaApp()
         self.hold_record = [] #用户持仓记录
         self.whitelist = [] #警报白名单，防止多次预警
     
@@ -136,6 +138,10 @@ class Analyse:
         @ flow_level(int) -> 溢价等级[-3,3],详见下文的溢价表定义
         '''
         #1.参数输入
+        if IdConvert.get_id_type(ID) > 2: #如果是非A股的标的，直接返回当前现价
+            est_price = self.sina.RtPrice(ID)
+            return est_price, 0
+        
         ts_app = TushareApp.ts_app()
         avg_growth = ts_app.AvgGrowthInfo(ID,5)#过去5年eps平均增长率，财报爬取
         if est_growth == 0:
@@ -251,8 +257,10 @@ class Analyse:
 if __name__ == '__main__':
     ts = TushareApp.ts_app()
     alg = Analyse()
-    test = ts.BasicInfo('601012.SH')
-    app = alg.check(test)
-    print(app)
-    est_price, flow_level = alg.Estimation('600377.SH',0.1,0.7)
-    print(est_price, flow_level)
+#    test = ts.BasicInfo('601012.SH')
+#    app = alg.check(test)
+#    print(app)
+    est_price, flow_level = alg.Estimation('510300.SH',0.1,0.7)
+    print(est_price)
+#    print(est_price, flow_level)
+    
