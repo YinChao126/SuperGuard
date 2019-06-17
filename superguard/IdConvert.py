@@ -121,4 +121,4 @@ if __name__ == '__main__':
     print(str_id)
     print(tail2id(str_id))
     print(front2id(str_id))
-    print(get_id_type('000651'))
+    print(get_id_type('019536.SH'))

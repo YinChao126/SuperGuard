@@ -138,7 +138,8 @@ class Analyse:
         @ flow_level(int) -> 溢价等级[-3,3],详见下文的溢价表定义
         '''
         #1.参数输入
-        if IdConvert.get_id_type(ID) > 2: #如果是非A股的标的，直接返回当前现价
+        print(ID)
+        if IdConvert.get_id_type(ID) >= 2: #如果是非A股的标的，直接返回当前现价
             est_price = self.sina.RtPrice(ID)
             return est_price, 0
         

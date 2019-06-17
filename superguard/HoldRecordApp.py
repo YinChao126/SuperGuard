@@ -9,6 +9,7 @@ import pandas as pd
 from datetime import datetime
 import TimeConverter
 
+import SinaApp
 import TushareApp
 import Analyse
 import IdConvert
@@ -37,6 +38,7 @@ class hd_record:
         self.get_user_record()
         
         self.ts = TushareApp.ts_app()
+        self.sina = SinaApp.SinaApp()
         self.anly = Analyse.Analyse()
         
     def get_user_record(self):
@@ -80,21 +82,17 @@ class hd_record:
         id_list = self.hold_record['id']
         for i in range(len(id_list)): #每一个个股
             str_id = IdConvert.tail2id(str(id_list[i]))
-            print(str_id)
             unit_price = self.hold_record.iloc[i]['unit_price']
 #            print(unit_price)
-            price, pct_chg = self.ts.Daily(str_id)
+            price = self.sina.RtPrice(str_id)
             curprice_list.append(price)
             earn_rate = round(((price - unit_price) / unit_price) * 100,2)
             earn_list.append(earn_rate) #获取盈亏率
-#            print(earn_rate)
             est, level = self.anly.Estimation(str_id)
-            print(est, level)
+#            est = 1
             estprice_list.append(round(est,2)) #获取估值
             guxi_list.append(0) #获取股息率， 暂时不管
-            print('finished\n')
         
-        return
         data = {
                 'earn_ratio':earn_list,
                 'cur_price':curprice_list,
@@ -103,19 +101,17 @@ class hd_record:
                 }
         df2 = pd.DataFrame(data)
         single_record = pd.concat([self.hold_record,df2],axis=1)
-        print(single_record)
+#        print(single_record)
         self.f_record += now + r'.csv'
-        single_record.to_csv(self.f_record)
+        single_record.to_csv(self.f_record, index = False)
         
         #2. 总体分析
         # 先获取个股的当前股价、估值、股息率
         # 再计算总资产、盈亏率、股债比、整体股息率
-#        print(self.ts.GetPrice())
         total_cost = 0
         total_asset = 0 #总资产
         stock_acc = 0 
-        for i in range(4):
-#        for i in range(len(single_record)):
+        for i in range(len(single_record)):
             amount = single_record.iloc[i]['amount']
             unit_price = single_record.iloc[i]['unit_price']
             cur_price = single_record.iloc[i]['cur_price']
@@ -124,22 +120,40 @@ class hd_record:
             total_asset += amount * cur_price
             str_id = str(single_record.iloc[i]['id'])
             id_type = IdConvert.get_id_type(str_id)
-            print(str_id, id_type)
+#            print(str_id, id_type)
             if id_type < 2:
                 stock_acc += amount * cur_price
         
         t_earn = total_asset - total_cost
         t_earn_rate = (total_asset - total_cost) / total_cost
-        print(t_earn_rate)
         sb_rate = round((stock_acc / total_asset),2)
-        print(sb_rate)
 
-#        #写入文件
-#        with open(self.f_total, 'a') as fh:
-#            fh.write('')
-#        
+        try:
+            records = pd.read_csv(self.f_total)
+        except:
+            header = ['date','cost','asset','earn','earn_rate','sb_rate','dividend_rate']
+            records = pd.DataFrame(columns=header)
+        if records.empty == True:
+            print('empty')
+        
+        date = TimeConverter.dtime2str(datetime.now())
+        data = {
+                'date':[date],
+                'cost':[total_cost],
+                'asset':[total_asset],
+                'earn':[t_earn],
+                'earn_rate':[t_earn_rate],
+                'sb_rate':[0],
+                'dividend_rate':[0]
+                }
+        new_record = pd.DataFrame(data)
+        
+#        #写入文件 #留存bug，重复执行时，会反复叠加上去，应该要去重
+        records = pd.concat([records,new_record],axis=0)
+        records.to_csv(self.f_total, index = False)
+        return data
         
 if __name__ == '__main__':
     app = hd_record()
-    app.HoldRecordAnalyse()
-#    app.test()
+    a = app.HoldRecordAnalyse()
+    

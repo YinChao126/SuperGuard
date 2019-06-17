@@ -212,7 +212,7 @@ class SinaApp:
         p_high = data[4]
         p_low = data[5]
         p_money = data[9]
-        return p_cur
+        return float(p_cur)
         
         
 #    def RealTimeData(self, id):
