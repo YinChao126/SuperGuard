@@ -5,6 +5,9 @@ Created on Sat Dec 22 09:05:14 2018
 @author: Administrator
 #json常识： dumps将字符串转成json， loads将json转成字典， 最后字典可以使用
 """
+import re
+import urllib.request
+from bs4 import BeautifulSoup
 import requests
 import json
 import pandas as pd
@@ -23,11 +26,18 @@ class SinaApp:
     @类名：SinaApp
     @描述：从新浪财经获取的数据
     @用户：获取原始数据并存档，获取指定日期的价格
+    @备注：下述所有ID格式统一为： shxxxxxx, szxxxxxx
     @已提供API列表：
     >>UpdateKday:更新指定个股的k线数据，如果没有则自动创建，结果持久化到本地或者数据库
-    >>GetInfo:获取指定个股某一天的交易数据(close,high,low,open,volume)   
-    >>get_k_day:获取指定个股指定天数的K线数据，以DataFrame格式返回
+    历史数据API：
+    >>GetInfo:获取指定个股某一天的交易数据(close,high,low,open,volume)  
     >>ClosePrice：获取指定个股某一天的收盘价
+    >>HistoryList:获取指定个股一个月的价格和成交量
+    
+    实时数据API：
+    >>RtPrice:获取指定个股当前最新价格
+    >>RtQuant:获取实时量比
+    >>RtData:批量获取实时数据（开盘，现价，最高，最低，涨跌幅）
     '''
     
     def __init__(self):
@@ -42,7 +52,126 @@ class SinaApp:
             os.makedirs(self.data_path)
         self.compatible = True #默认打开，方便使用,想要禁止，请设置为False
         self.log = True #调试语句和显示语句使能开关
-
+    
+    def HistoryList(self, str_id, day=22):
+        '''
+        获取指定个股连续n天（默认一个月）的基础交易数据（价格，成交量）
+        返回以dataframe形式给出
+        输入：  str_id -> 600660
+              day = 22天数
+        返回： 
+            date, open, high, low, close, money
+        '''
+    
+    def RtData(self, str_id_list):
+        '''
+        获取指定个股实时交易详情，以DataFrame形式返回
+        输入必须是list类型的多个参数
+        返回均为dataframe格式
+        '''
+        
+        url = 'http://hq.sinajs.cn/list='
+        for item in str_id_list:
+            url += item
+            url += ','
+        url = url[:-1]
+        page = str(urllib.request.urlopen(url).read())
+        data = page.split(';')
+        
+        cur_open = []
+        cur_price = []
+        high = []
+        low = []
+        rate = []
+        money = []
+        
+        for i in range(len(data)-1):
+#            
+            info = data[i].split(',')
+            p_open = info[1]
+            p_cur = info[3]
+            p_high = info[4]
+            p_low = info[5]
+            p_money = str(int(float(info[9])))
+            r = round(((float(p_cur) - float(p_open)) / float(p_open))*100, 2)
+            r = str(r)
+            cur_open.append(p_open)
+            cur_price.append(p_cur)
+            high.append(p_high)
+            low.append(p_low)
+            rate.append(r)
+            money.append(p_money)
+        data = {
+                'id':str_id_list,
+                'open':cur_open,
+                'cur':cur_price,
+                'high':high,
+                'low':low,
+                'rate':rate,
+                'money':money
+                }
+        d = pd.DataFrame(data)
+        print(d)
+        return d
+        
+        
+    def RtPrice(self, str_id):
+        '''
+        获取指定个股当前的实时交易现价
+        
+        sina数据格式定义
+        # 参数定义
+        # ID            代码             600660      由单独变量给出
+        # 0 TdyOpen       今开盘价
+        # 1 YdyClose      昨天收盘
+        # 2 CurPrice      现价
+        # 3 HighPrice     最高价
+        # 4 LowPrice      最低价
+        # 5 CurBuyPrice   竞买价
+        # 6 CurSellPrice  竞卖价
+        # 7 CurQuantity   成交量
+        # 8 CurMoney      成交额
+        # 9 Buy1_quant    买一数量
+        # 10Buy1_price    买一报价
+        # 11Buy2_quant    买一数量
+        # 12Buy2_price    以此类推。。。
+        # 13Buy3_quant
+        # 14Buy3_price
+        # 15Buy4_quant
+        # 16Buy4_price
+        # 17Buy5_quant
+        # 18Buy5_price
+        # 19Sell1_quant
+        # 20Sell1_price
+        # 21Sell2_quant
+        # 22Sell2_price
+        # 23Sell3_quant
+        # 24Sell3_price
+        # 25Sell4_quant
+        # 26Sell4_price
+        # 27Sell5_quant
+        # 28Sell5_price
+        '''
+        url = 'http://hq.sinajs.cn/list='+str_id
+        page = str(urllib.request.urlopen(url).read())
+        data = page.split(',')
+        p_open = data[1]
+        p_cur = data[3]
+        p_high = data[4]
+        p_low = data[5]
+        p_money = data[9]
+        print(p_cur,p_money)
+        return p_cur
+        
+        
+#    def RealTimeData(self, id):
+#    def RealTimeData(self, id):
+        '''
+        获取
+        '''
+        url = 'http://hq.sinajs.cn/list=sh601012,sh600660'
+        
+        
     def UpdateKday(self, mid, mode = 'CSV'):
         '''
         @用户接口API：
@@ -229,17 +358,25 @@ if __name__ == '__main__':
     3. 每次获取都统一从k_day.csv一个文件中获取，没有就append进去
     '''
     test = SinaApp()
+    
+    #获取实时价格
+#    test.RtPrice('sh601012')
+    
+    #批量获取实时交易数据
+    test.RtData(['sh601012','sh600377'])
+    
 #    test.update_one('sh000001')
-    
-    ll = ['sh000001','sh510300','sz000651','sz002597','sh600104','sh600377','sh600660','sh601012','sh019536']
-    
-    #更新k线数据
-    test.UpdateKday(ll)
-    
-    #获取指定一天的数据
-    a = test.GetInfo('sh600660','2019/01/08')
-
-    #获取指定一天的价格
-    a = test.ClosePrice('sh600660','2019-01-08')
+#    
+#    ll = ['sh000001','sh510300','sz000651','sz002597','sh600104','sh600377','sh600660','sh601012','sh019536']
+#    
+#    #更新k线数据
+#    test.UpdateKday(ll)
+#    
+#    #获取指定一天的数据
+#    a = test.GetInfo('sh600660','2019/01/08')
+#
+#    #获取指定一天的价格
+#    a = test.ClosePrice('sh600660','2019-01-08')
 
 #    print(a)
+    
