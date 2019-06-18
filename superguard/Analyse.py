@@ -11,6 +11,8 @@ from datetime import timedelta
 import pandas as pd
 import TimeConverter
 import IdConvert
+import Inform
+import TradeDay
 
 import TushareApp
 import SinaApp
@@ -42,7 +44,10 @@ class Analyse:
         self.sina = SinaApp.SinaApp()
         self.hold_record = [] #用户持仓记录
         self.whitelist = [] #警报白名单，防止多次预警
-    
+        
+        #短信预警配置
+        self.phone = '15712091836'
+        self.info_msg = Inform.Inform()
     def AlarmMask(self, str_id):
         '''
         如果已经预警，则加入白名单，停牌后会自动释放（中午11点半，下午3点）
@@ -54,30 +59,37 @@ class Analyse:
         重置状态，将白名单剔除
         '''
         self.whitelist = []
-    
+            
     def AlarmGuid(self, item_list):
         '''
         给定一组监控标的的参数，自动启动线程进行监视
         备注：输入参数是numpy类型，之后要统一成list！
         '''
+        print('参数初始化,请等待。。。')
         import time
         cnt = 0
+        interval = 30 #每半分钟自动检查一次
         self.est_list = {}
         for s in item_list:
             est, level = self.Estimation(s)
             self.est_list[s]=est
-        
-        while cnt < 10:
+        print('开始监控')
+        while True:
             cnt += 1
             print(cnt)
-            time.sleep(1)
-            
+            time.sleep(interval)
+            if TradeDay.is_work_time() == False: #非工作时间
+                print('不是交易时间')
+                time.sleep(60)
+                continue
             for s in item_list:
                 if self.check(s):
-                    print(s,'异常')
+                    msg = s+'异常，请检查！'
+                    self.info_msg.SendMsg(self.phone, msg)
                     self.AlarmMask(s)
                     
-            if cnt == 5:
+            if cnt >= 2 * 15: #每15分钟清除一次锁定状态
+                cnt = 0
                 self.AlarmReset()
     def check(self, str_id):
         '''
@@ -178,7 +190,6 @@ class Analyse:
         @ flow_level(int) -> 溢价等级[-3,3],详见下文的溢价表定义
         '''
         #1.参数输入
-        print(1,ID)
         if IdConvert.get_id_type(ID) >= 2: #如果是非A股的标的，直接返回当前现价
             est_price = self.sina.RtPrice(ID)
             return est_price, 0

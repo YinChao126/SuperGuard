@@ -21,7 +21,7 @@ class Inform:
     
     def SendMsg(self, phone_number, msg):
         msg = self.client.messages.create(
-        to='+86'+phone,
+        to='+86'+phone_number,
         from_=self.phone_id, #your twilio code
         body=msg)
         return msg.sid

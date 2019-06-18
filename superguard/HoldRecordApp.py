@@ -56,7 +56,20 @@ class hd_record:
                 str_id = n0*'0' + str_id
                 self.hold_record.loc[i, 'id'] = str_id
         return self.hold_record
-            
+    
+    def GetUserStockList(self):
+        '''
+        获取用户持股记录，以list形式存在
+        '''
+#        print(self.hold_record)
+        id_list = self.hold_record['id']
+        result = []
+        for s in id_list:
+            result.append(IdConvert.tail2id(str(s)))
+#        print(result)
+        return result
+        
+        
     def HoldRecordAnalyse(self):
         '''
         @更新时间：2019-6-18
@@ -156,4 +169,6 @@ class hd_record:
         
 if __name__ == '__main__':
     app = hd_record()
-    a = app.HoldRecordAnalyse()
+#    a = app.HoldRecordAnalyse()
+    
+    a = app.GetUserStockList()
