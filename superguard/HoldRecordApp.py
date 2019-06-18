@@ -85,14 +85,18 @@ class hd_record:
             unit_price = self.hold_record.iloc[i]['unit_price']
 #            print(unit_price)
             price = self.sina.RtPrice(str_id)
+            if price <= 0:
+                print('服务器维护，无法获取实时数据')
+                return 0
             curprice_list.append(price)
             earn_rate = round(((price - unit_price) / unit_price) * 100,2)
             earn_list.append(earn_rate) #获取盈亏率
             est, level = self.anly.Estimation(str_id)
 #            est = 1
             estprice_list.append(round(est,2)) #获取估值
-            guxi_list.append(0) #获取股息率， 暂时不管
-        
+            guxi_rate = round(self.hold_record.iloc[i]['divd_eps'] * 100 / price, 2) #股息率
+            guxi_list.append(guxi_rate) #每股现金分红（暂时手动更新）
+            
         data = {
                 'earn_ratio':earn_list,
                 'cur_price':curprice_list,
@@ -104,18 +108,20 @@ class hd_record:
 #        print(single_record)
         self.f_record += now + r'.csv'
         single_record.to_csv(self.f_record, index = False)
+
         
         #2. 总体分析
         # 先获取个股的当前股价、估值、股息率
         # 再计算总资产、盈亏率、股债比、整体股息率
-        total_cost = 0
+        total_cost = 0 #总成本
         total_asset = 0 #总资产
-        stock_acc = 0 
+        stock_acc = 0 #股票总资产
+        bond_acc = 0 #累积现金分红
         for i in range(len(single_record)):
             amount = single_record.iloc[i]['amount']
             unit_price = single_record.iloc[i]['unit_price']
             cur_price = single_record.iloc[i]['cur_price']
-            bond_rate = single_record.iloc[i]['bond_rate']
+            bond_acc += single_record.iloc[i]['divd_eps'] * amount
             total_cost += amount * unit_price
             total_asset += amount * cur_price
             str_id = str(single_record.iloc[i]['id'])
@@ -125,13 +131,14 @@ class hd_record:
                 stock_acc += amount * cur_price
         
         t_earn = total_asset - total_cost
-        t_earn_rate = (total_asset - total_cost) / total_cost
-        sb_rate = round((stock_acc / total_asset),2)
+        t_earn_rate = int((total_asset - total_cost) / total_cost * 100)
+        sb_rate = round((stock_acc / total_asset)*100,2)
+        dividend_rate = round(bond_acc / total_asset * 100, 2)
 
         try:
             records = pd.read_csv(self.f_total)
         except:
-            header = ['date','cost','asset','earn','earn_rate','sb_rate','dividend_rate']
+            header = ['date','cost','asset','earn','earn_rate','sb_rate','divd_rate']
             records = pd.DataFrame(columns=header)
         if records.empty == True:
             print('empty')
@@ -143,8 +150,8 @@ class hd_record:
                 'asset':[total_asset],
                 'earn':[t_earn],
                 'earn_rate':[t_earn_rate],
-                'sb_rate':[0],
-                'dividend_rate':[0]
+                'sb_rate':[sb_rate],
+                'divd_rate':[dividend_rate]
                 }
         new_record = pd.DataFrame(data)
         
