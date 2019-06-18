@@ -76,7 +76,7 @@ class hd_record:
         curprice_list = [] #当前股价
         estprice_list = [] #当前估值
         
-        now = TimeConverter.dtime2str(datetime.now())
+        now = TimeConverter.dday2str(datetime.now())
         
         #1. 个股分析
         id_list = self.hold_record['id']
@@ -143,7 +143,7 @@ class hd_record:
         if records.empty == True:
             print('empty')
         
-        date = TimeConverter.dtime2str(datetime.now())
+        date = TimeConverter.dday2str(datetime.now())
         data = {
                 'date':[date],
                 'cost':[total_cost],

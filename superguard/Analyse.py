@@ -194,7 +194,7 @@ class Analyse:
             print('警告：无法获取除非每股收益，用每股收益替代，有风险')
             dt_eps = data.iloc[0]['eps']
         report_time = data.iloc[0]['end_date']
-        report_time = TimeConverter.str2dtime(report_time)
+        report_time = TimeConverter.str2dday(report_time)
         delta = t1 - report_time
         if delta.days > 365:
             if self.log:

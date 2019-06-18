@@ -69,11 +69,11 @@ class ts_app:
         if cur_day == 0:
             cur_day = datetime.now()  
         else:
-            cur_day = TimeConverter.str2dtime(cur_day)
+            cur_day = TimeConverter.str2dday(cur_day)
         if cur_day.year < 1991:
             return 0, 0
         while True:
-            day = TimeConverter.dtime2str(cur_day)
+            day = TimeConverter.dday2str(cur_day)
             data = self.pro.daily_basic(ts_code=ID, trade_date=day, fields='trade_date,close')       
             if data.empty != True:
                 break
@@ -206,7 +206,7 @@ class ts_app:
         '''
         stop_day = datetime.now()
         start_day = stop_day - timedelta(3*22) #一次性获取最近3个月数据
-        start_day = TimeConverter.dtime2str(start_day)
+        start_day = TimeConverter.dday2str(start_day)
         data = self.pro.query('daily',ts_code='601012.SH',start_date=start_day)
         return data.iloc[0]['close'], data.iloc[0]['pct_chg']
     
@@ -223,7 +223,7 @@ class ts_app:
         stop_day = datetime.now()
         cnt = 200
         while cnt > 0: #获得第一天
-            day = TimeConverter.dtime2str(stop_day)
+            day = TimeConverter.dday2str(stop_day)
             data = self.pro.daily_basic(ts_code=ID, trade_date=day, fields='trade_date, ts_code, close, turnover_rate,pe, pe_ttm,pb,total_share')
             stop_day -= timedelta(1)
             cnt -= 1
@@ -242,12 +242,12 @@ class ts_app:
         备注：该函数为辅助函数，用户禁止调用
         '''
         stop_day = datetime.now()
-        cur_day = TimeConverter.str2dtime(start_day)
+        cur_day = TimeConverter.str2dday(start_day)
         data = pd.DataFrame(columns=['trade_date','turnover_rate','pe_ttm','pb'])
         while cur_day < stop_day:
             if cur_day.weekday() < 5:
                 try:
-                    day = TimeConverter.dtime2str(cur_day)
+                    day = TimeConverter.dday2str(cur_day)
                     info = self.pro.daily_basic(ts_code=ID, trade_date=day, fields='trade_date,turnover_rate,pe_ttm,pb')
                     data = pd.concat([data, info], axis = 0)
                     time.sleep(0.3)
@@ -305,9 +305,9 @@ class ts_app:
         输出：平均换手率、平均PE_TTM、平均PB
         '''
         stop_day = datetime.now() - timedelta(1)
-        cur_day = TimeConverter.str2dtime(start_day)
+        cur_day = TimeConverter.str2dday(start_day)
         while cur_day < stop_day: #获得第一天
-            day = TimeConverter.dtime2str(cur_day)
+            day = TimeConverter.dday2str(cur_day)
             data = self.pro.daily_basic(ts_code=ID, trade_date=day, fields='trade_date,turnover_rate,pe_ttm,pb')
             cur_day += timedelta(1)        
             if data.empty != True:
@@ -320,7 +320,7 @@ class ts_app:
         while cur_day < stop_day:
             if cur_day.weekday() < 5:
                 try:
-                    day = TimeConverter.dtime2str(cur_day)
+                    day = TimeConverter.dday2str(cur_day)
                     info = self.pro.daily_basic(ts_code=ID, trade_date=day, fields='trade_date,turnover_rate,pe_ttm,pb')
                     data = pd.concat([data, info], axis = 0)
                     time.sleep(0.2)
@@ -409,7 +409,7 @@ class ts_app:
             default_data = {'id':id_str,
                             'year':years,
                             'days':0,
-                            'stop_day':TimeConverter.dtime2str(today,'/'),
+                            'stop_day':TimeConverter.dday2str(today,'/'),
                             'turnover':0.0,
                             'pe':0.0,
                             'pb':0.0}
@@ -420,7 +420,7 @@ class ts_app:
             update_day = today - timedelta(years * 365)
 #            update_day = today - timedelta(10)
 #            print(update_day, today)
-            append_list = self._DailyRecord(id_str,TimeConverter.dtime2str(update_day))
+            append_list = self._DailyRecord(id_str,TimeConverter.dday2str(update_day))
 #            print(append_list)
             new_turnover = round(append_list['turnover_rate'].mean(),2)
             new_pe = round(append_list['pe_ttm'].mean(),2)
@@ -452,17 +452,17 @@ class ts_app:
             old_pb = df_result.loc[index_name,'pb']
             total_day = df_result.loc[index_name,'days']            
             start_day = df_result.loc[index_name,'stop_day']
-            start_day = TimeConverter.str2dtime(start_day)
+            start_day = TimeConverter.str2dday(start_day)
             today = datetime.now()
 #            print(start_day, today)
-            if TimeConverter.dtime2str(start_day) == TimeConverter.dtime2str(today):
+            if TimeConverter.dday2str(start_day) == TimeConverter.dday2str(today):
                 if self.log:
                     print('already latest')
                 return 0
             
 #            print(start_day)
 #            print('old value:',old_turnover, old_pe, old_pb)
-            append_list = self._DailyRecord(id_str,TimeConverter.dtime2str(start_day))
+            append_list = self._DailyRecord(id_str,TimeConverter.dday2str(start_day))
             if isinstance(append_list,int): #最近更新的那一天没有记录（周末或者节假日）
                 if self.log:
                     print('already latest')
@@ -481,7 +481,7 @@ class ts_app:
             update_item = df_result.copy()
 #            index_name = df_result.index.tolist()[0]
 #            print(update_item)
-            update_item.loc[index_name,'stop_day']=TimeConverter.dtime2str(today,'/')
+            update_item.loc[index_name,'stop_day']=TimeConverter.dday2str(today,'/')
             update_item.loc[index_name,'turnover']=new_turnover
             update_item.loc[index_name,'pe']=new_pe
             update_item.loc[index_name,'pb'] = new_pb

@@ -256,9 +256,9 @@ class SinaApp:
             latest_record = content.iloc[-1]
             get_today_data = self.get_k_day(id_str,1) #获取最新网络数据
             today_str = get_today_data.iloc[-1]['day'] #今天
-            today = TimeConverter.str2dtime(today_str)
+            today = TimeConverter.str2dday(today_str)
             record_str = latest_record['day']  #最新记录的日期
-            latest = TimeConverter.str2dtime(record_str)
+            latest = TimeConverter.str2dday(record_str)
             
             
             if latest == today: #已经是最新的
@@ -273,7 +273,7 @@ class SinaApp:
                 b = self.get_k_day(id_str, update_day)
                 for i in range(len(b)):
                     day = b.iloc[i]['day']
-                    day = TimeConverter.str2dtime(day)
+                    day = TimeConverter.str2dday(day)
                     if day > latest:
                         index = i
                         break
@@ -299,10 +299,10 @@ class SinaApp:
         '''
         if self.compatible == True:
             if isinstance(date, datetime):
-                date = TimeConverter.dtime2str(date,'-')
+                date = TimeConverter.dday2str(date,'-')
             elif isinstance(date, str):
-                date = TimeConverter.str2dtime(date)
-                date = TimeConverter.dtime2str(date,'-')
+                date = TimeConverter.str2dday(date)
+                date = TimeConverter.dday2str(date,'-')
             self.UpdateKday(id_str) #自动更新
             
         file_name = self.data_path + id_str + '.csv'
@@ -408,13 +408,14 @@ if __name__ == '__main__':
     2. 爬取的数据存为csv
     3. 每次获取都统一从k_day.csv一个文件中获取，没有就append进去
     '''
+    str_id = '601012.SH'
     test = SinaApp()
     
 #    获取实时价格
-    a = test.RtPrice('601012.SH')
+    a = test.RtPrice(str_id)
     print(a)
 #    获取实时量比
-    a = test.RtQuant('sh600887')
+    a = test.RtQuant(str_id)
     print(a)
     
 #    #批量获取实时交易数据
