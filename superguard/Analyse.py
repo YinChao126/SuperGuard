@@ -35,19 +35,19 @@ class Analyse:
         with open(self.cfg_file, 'r') as fh: #读取配置参数
             parameter = json.load(fh)
             self.rate_th = parameter['rate_th']
-            self.turnover_th = parameter['turnover_th']
+            self.quant_th = parameter['quant_th']
             self.price_est = parameter['price_est']
-        
+            
         self.ts = TushareApp.ts_app()  
         self.sina = SinaApp.SinaApp()
         self.hold_record = [] #用户持仓记录
         self.whitelist = [] #警报白名单，防止多次预警
     
-    def AlarmMask(self, id):
+    def AlarmMask(self, str_id):
         '''
         如果已经预警，则加入白名单，停牌后会自动释放（中午11点半，下午3点）
         '''        
-        self.whitelist.append(id)
+        self.whitelist.append(str_id)
         
     def AlarmReset(self):
         '''
@@ -62,65 +62,105 @@ class Analyse:
         '''
         import time
         cnt = 0
+        self.est_list = {}
+        for s in item_list:
+            est, level = self.Estimation(s)
+            self.est_list[s]=est
+        
         while cnt < 10:
             cnt += 1
             print(cnt)
             time.sleep(1)
             
             for s in item_list:
-                s = s.__int__()
-                s = IdConvert.tail2id(str(s))
-                if self.check(self.ts.BasicInfo(s)):
-                    print(self.ts.BasicInfo(s))
+                if self.check(s):
+                    print(s,'异常')
                     self.AlarmMask(s)
                     
             if cnt == 5:
                 self.AlarmReset()
-                
-    def check(self, item):
+    def check(self, str_id):
         '''
         辅助函数：
-        描述：输入一条标准的tushare实时信息，判断是否正常，如果不正常，则返回异常值
-        其中：item只能来源于TushareApp.BasicInfo函数
-        其类型为DataFrame格式，字段由TushareApp决定
+        描述：输入id，判断是否正常，如果不正常，则返回异常值
+        其中：str_id可以是xxxxxx,shxxxxxx,xxxxxx.SH三种中的任意类型
         
         返回值：
         -1 输入值非法
         0 正常
         ret 异常反应（3-7位为0）
-        bit0: 换手率异常
+        bit0: 量比异常
         bit1: 股价异常
         bit2: 估值异常
-        例如： ret=3（换手率异常+股价异常） ret=7（全部异常）
+        例如： ret=3（量比异常+股价异常） ret=7（全部异常）
         '''
-        
-        #1. 输入格式检查
-        #2. 获取该个股的平均估值，平均换手率
-        code = item.iloc[0]['ts_code']
-        cur_turnover = item.iloc[0]['turnover_rate']
         ret = 0
         
-        if item.iloc[0]['ts_code'] in self.whitelist: #如果在白名单内，则
+        if str_id in self.whitelist: #如果在白名单内，则
             return 0
         
-        avg_turnover, pe, pb = self.ts.AvgExchangeInfo(code,3) #[换手率，PEttm, PB]
-#        print(avg_turnover)
         #1. 换手率异常检测
-        turover_change = (cur_turnover - avg_turnover) / cur_turnover
-        if turover_change < self.turnover_th[0] or turover_change > self.turnover_th[1]:
+        if self.sina.RtQuant(str_id) > self.quant_th:
             ret += 1
         
         #2. 涨跌幅异常检测
-        cur_price, rate_change = self.ts.Daily(code)
+        rate_change = self.sina.RtChg(str_id)
         if rate_change < self.rate_th[0] or rate_change > self.rate_th[1]:
             ret += 2
         
         #3. 估值异常检测
-        est_price, level = self.Estimation(code)
+        cur_price = self.sina.RtPrice(str_id)
+        est_price = self.est_list.get(str_id)
         percentage = (cur_price - est_price) / est_price
         if percentage < self.price_est[0] or percentage > self.price_est[1]:
             ret += 4
         return ret
+        
+        
+#    def check(self, item):
+#        '''
+#        辅助函数：
+#        描述：输入一条标准的tushare实时信息，判断是否正常，如果不正常，则返回异常值
+#        其中：item只能来源于TushareApp.BasicInfo函数
+#        其类型为DataFrame格式，字段由TushareApp决定
+#        
+#        返回值：
+#        -1 输入值非法
+#        0 正常
+#        ret 异常反应（3-7位为0）
+#        bit0: 换手率异常
+#        bit1: 股价异常
+#        bit2: 估值异常
+#        例如： ret=3（换手率异常+股价异常） ret=7（全部异常）
+#        '''
+#        
+#        #1. 输入格式检查
+#        #2. 获取该个股的平均估值，平均换手率
+#        code = item.iloc[0]['ts_code']
+#        cur_turnover = item.iloc[0]['turnover_rate']
+#        ret = 0
+#        
+#        if item.iloc[0]['ts_code'] in self.whitelist: #如果在白名单内，则
+#            return 0
+#        
+#        avg_turnover, pe, pb = self.ts.AvgExchangeInfo(code,3) #[换手率，PEttm, PB]
+##        print(avg_turnover)
+#        #1. 换手率异常检测
+#        turover_change = (cur_turnover - avg_turnover) / cur_turnover
+#        if turover_change < self.turnover_th[0] or turover_change > self.turnover_th[1]:
+#            ret += 1
+#        
+#        #2. 涨跌幅异常检测
+#        cur_price, rate_change = self.ts.Daily(code)
+#        if rate_change < self.rate_th[0] or rate_change > self.rate_th[1]:
+#            ret += 2
+#        
+#        #3. 估值异常检测
+#        est_price, level = self.Estimation(code)
+#        percentage = (cur_price - est_price) / est_price
+#        if percentage < self.price_est[0] or percentage > self.price_est[1]:
+#            ret += 4
+#        return ret
         
     
 
@@ -138,7 +178,7 @@ class Analyse:
         @ flow_level(int) -> 溢价等级[-3,3],详见下文的溢价表定义
         '''
         #1.参数输入
-        print(ID)
+        print(1,ID)
         if IdConvert.get_id_type(ID) >= 2: #如果是非A股的标的，直接返回当前现价
             est_price = self.sina.RtPrice(ID)
             return est_price, 0
@@ -256,12 +296,13 @@ class Analyse:
         return est_price, flow_level
     
 if __name__ == '__main__':
-    ts = TushareApp.ts_app()
-    alg = Analyse()
-#    test = ts.BasicInfo('601012.SH')
-#    app = alg.check(test)
-#    print(app)
-    est_price, flow_level = alg.Estimation('510300.SH',0.1,0.7)
-    print(est_price)
-#    print(est_price, flow_level)
+    app = Analyse()
+    
+#    #估值
+#    est_price, flow_level = app.Estimation('510300.SH',0.1,0.7)
+#    print(est_price)
+    
+    #预警
+    item_list = ['600660.SH', '601012.SH']
+    app.AlarmGuid(item_list)
     

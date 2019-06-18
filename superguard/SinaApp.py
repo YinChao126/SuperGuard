@@ -36,6 +36,7 @@ class SinaApp:
     
     实时数据API：
     >>RtPrice:获取指定个股当前最新价格
+    >>RtChg:获取当前个股的涨跌幅（%）
     >>RtQuant:获取实时量比
     >>RtData:批量获取实时数据（开盘，现价，最高，最低，涨跌幅）
     '''
@@ -51,7 +52,7 @@ class SinaApp:
         if os.path.exists(self.data_path) == False:
             os.makedirs(self.data_path)
         self.compatible = True #默认打开，方便使用,想要禁止，请设置为False
-        self.log = True #调试语句和显示语句使能开关
+        self.log = False #调试语句和显示语句使能开关
     
     def RtQuant(self, str_id):
         '''
@@ -215,12 +216,23 @@ class SinaApp:
         return float(p_cur)
         
         
-#    def RealTimeData(self, id):
-#    def RealTimeData(self, id):
-        '''
-        获取
-        '''
-        url = 'http://hq.sinajs.cn/list=sh601012,sh600660'
+    def RtChg(self,str_id):
+        if len(str_id) == 8:
+            pass
+        elif len(str_id) == 6:
+            str_id = IdConvert.front2id(str_id)
+        elif len(str_id) == 9:
+            str_id = IdConvert.front2id(str_id[:6])
+        else:
+            print('[RtPrice]错误，id输入非法')
+            return 0
+        url = 'http://hq.sinajs.cn/list='+str_id
+        page = str(urllib.request.urlopen(url).read())
+        data = page.split(',')
+        p_open = float(data[1])
+        p_cur = float(data[3])
+        chg = round((p_cur - p_open) * 100 / p_open, 2)
+        return chg       
         
         
     def UpdateKday(self, mid, mode = 'CSV'):
@@ -412,8 +424,13 @@ if __name__ == '__main__':
     test = SinaApp()
     
 #    获取实时价格
-    a = test.RtPrice(str_id)
-    print(a)
+#    a = test.RtPrice(str_id)
+#    print(a)
+    
+#    #获得实时涨跌幅
+#    a = test.RtChg(str_id)
+#    print(a)
+    
 #    获取实时量比
     a = test.RtQuant(str_id)
     print(a)
