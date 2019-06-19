@@ -54,7 +54,7 @@ class ts_app:
             append_table = ['basic_eps_yoy','dt_eps_yoy','op_yoy'] #自主添加
             self.fields += append_table
         
-            self.save_path = 'avg_info.csv'
+            self.save_path = BASE_DIR + r'\raw_data\avg_info.csv'
         except:
             print('tushare初始化失败，请确保tushare_token.cfg路径和内容正确')
     def GetPrice(self, ID,cur_day = 0):

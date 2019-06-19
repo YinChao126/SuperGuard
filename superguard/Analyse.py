@@ -6,6 +6,7 @@ Created on Sat Jun 15 15:03:02 2019
 """
 import os
 import json
+import time
 from datetime import datetime
 from datetime import timedelta
 import pandas as pd
@@ -62,35 +63,79 @@ class Analyse:
             
     def AlarmGuid(self, item_list):
         '''
-        给定一组监控标的的参数，自动启动线程进行监视
-        备注：输入参数是numpy类型，之后要统一成list！
+        @描述：给定一组监控标的的参数，自动启动线程进行监视，
+        当成交量、涨跌幅、估值任意指标异常，都会触发手机短信预警机制，同时该个股被锁定一段
+        时间防止重复告警
+        备注：机制仍然不完善，没有优先级，如果低级别预警触发，则高级别的预警也会失效。
+        
         '''
         print('参数初始化,请等待。。。')
-        import time
-        cnt = 0
-        interval = 30 #每半分钟自动检查一次
+        interval_seconds = 30  #每30秒自动检查一次
+        unlock_time_minute = 15 #每15分钟清除锁定状态
+        
         self.est_list = {}
         for s in item_list:
-            est, level = self.Estimation(s)
+            est, level = self.Estimation(s) #自动更新获取估计值
             self.est_list[s]=est
         print('开始监控')
+        cnt = 0
         while True:
-            cnt += 1
-            print(cnt)
-            time.sleep(interval)
             if TradeDay.is_work_time() == False: #非工作时间
                 print('不是交易时间')
                 time.sleep(60)
                 continue
-            for s in item_list:
-                if self.check(s):
-                    msg = s+'异常，请检查！'
+            
+            for s in item_list: #依次检查列表，判断是否正常
+                if s in self.whitelist: #如果该ID被列入白名单，则解锁前不会再次预警
+                    continue
+                
+                status = self.check(s)
+                if status < 0:
+                    print('输入值非法，检测失败')
+                elif status == 1:
+                    msg = s+'成交量异常，量比突破3，请检查！'
+                    print(msg)
+                    self.info_msg.SendMsg(self.phone, msg)
+                    self.AlarmMask(s)
+                elif status == 2:
+                    msg = s+'涨跌幅异常，请注意！'
+                    print(msg)
+                    self.info_msg.SendMsg(self.phone, msg)
+                    self.AlarmMask(s)
+                elif status == 3:
+                    msg = s+'成交量异常，涨跌幅异常，请仔细检查！'
+                    print(msg)
+                    self.info_msg.SendMsg(self.phone, msg)
+                    self.AlarmMask(s)
+                elif status == 4:
+                    msg = s+'估值异常，请注意！'
+                    print(msg)
+                    self.info_msg.SendMsg(self.phone, msg)
+                    self.AlarmMask(s)
+                elif status == 5:
+                    msg = s+'成交量异常，估值异常，请仔细检查！'
+                    print(msg)
+                    self.info_msg.SendMsg(self.phone, msg)
+                    self.AlarmMask(s)
+                elif status == 6:
+                    msg = s+'涨跌幅异常，估值异常，请仔细检查！'
+                    print(msg)
+                    self.info_msg.SendMsg(self.phone, msg)
+                    self.AlarmMask(s)
+                elif status == 7:
+                    msg = s+'全部异常，机会来了请把握'
+                    print(msg)
                     self.info_msg.SendMsg(self.phone, msg)
                     self.AlarmMask(s)
                     
-            if cnt >= 2 * 15: #每15分钟清除一次锁定状态
+            if cnt >= 60 / interval_seconds * unlock_time_minute: #定期解锁白名单
                 cnt = 0
                 self.AlarmReset()
+                
+            cnt += 1
+            print(cnt)
+            time.sleep(interval_seconds) #每次检查完毕，休息一定时间
+            
     def check(self, str_id):
         '''
         辅助函数：
