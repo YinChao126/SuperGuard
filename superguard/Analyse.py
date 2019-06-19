@@ -25,7 +25,7 @@ class Analyse:
     更新时间：2019-6-16
     API一览表：
     Estimation：实现个股的估值功能
-    AlarmGuid: 实现预警监测功能
+    AlarmGuard: 实现预警监测功能
     '''
     def __init__(self):
         self.log = False #关闭log
@@ -61,7 +61,7 @@ class Analyse:
         '''
         self.whitelist = []
             
-    def AlarmGuid(self, item_list):
+    def AlarmGuard(self, item_list):
         '''
         @描述：给定一组监控标的的参数，自动启动线程进行监视，
         当成交量、涨跌幅、估值任意指标异常，都会触发手机短信预警机制，同时该个股被锁定一段
@@ -360,5 +360,5 @@ if __name__ == '__main__':
     
     #预警
     item_list = ['600660.SH', '601012.SH']
-    app.AlarmGuid(item_list)
+    app.AlarmGuard(item_list)
     

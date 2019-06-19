@@ -8,6 +8,7 @@ import os
 import pandas as pd
 from datetime import datetime
 import TimeConverter
+import TradeDay
 
 import SinaApp
 import TushareApp
@@ -20,7 +21,8 @@ class hd_record:
     ---------------------------------------------------------------------------
     提供的API一览表：
     GetUserStockList: 获取用户持仓个股的ID号
-    HoldRecordAnalyse: 实现持仓完整分析，并自动更新数据库（暂时存为本地csv文件）
+    HoldRecordAnalyse: 实现一次持仓分析，并更新数据库（暂时存为本地csv文件）
+    InfiniteHoldRecordAnalyse: 无限运行持仓分析，工作日每天定时15点更新一次持仓分析记录
     ---------------------------------------------------------------------------
     
     辅助函数（用户无需调用）
@@ -70,6 +72,19 @@ class hd_record:
 #        print(result)
         return result
         
+    def InfiniteHoldRecordAnalyse(self):
+        '''
+        描述：开启一个无限循环的监控线程，每天15点更新一次持仓记录并写入AssetOverview.csv
+        输入：无
+        输出：无
+        '''
+        import time
+        while True:
+            now = datetime.now()            
+            if TradeDay.is_tradeday() and now.hour == 15:
+                self.HoldRecordAnalyse()
+                print(now, 'update once HoldRecordAnalyse')
+            time.sleep(3600)
         
     def HoldRecordAnalyse(self):
         '''
