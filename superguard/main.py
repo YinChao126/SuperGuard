@@ -27,7 +27,7 @@ print('成功创建实时预警线程')
 try:
     while True:
         time.sleep(1)
-except KeyboardInterrupt: #ctrl+c可以正常终止程序
+except: #ctrl+c可以正常终止程序
     ThreadQuit.stop_thread(task_guard)
     ThreadQuit.stop_thread(task_record_analyse)
     print('成功销毁所有线程，安全退出')
