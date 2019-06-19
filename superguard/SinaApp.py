@@ -6,6 +6,7 @@ Created on Sat Dec 22 09:05:14 2018
 #json常识： dumps将字符串转成json， loads将json转成字典， 最后字典可以使用
 """
 import re
+import platform
 import urllib.request
 from bs4 import BeautifulSoup
 import requests
@@ -48,7 +49,10 @@ class SinaApp:
         compatible:兼容模式，开启后使用更方便（效率显著降低）
         兼容模式下：自动检查更新，自动检查输入数据类型并自动切换
         '''
-        self.data_path = BASE_DIR + '\\raw_data\\' #默认文件保存地址
+        if "Linux" == platform.system():
+            self.data_path = BASE_DIR + '/raw_data/' #默认文件保存地址
+        else:
+            self.data_path = BASE_DIR + '\\raw_data\\' #默认文件保存地址
         if os.path.exists(self.data_path) == False:
             os.makedirs(self.data_path)
         self.compatible = True #默认打开，方便使用,想要禁止，请设置为False

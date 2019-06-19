@@ -10,6 +10,7 @@ from datetime import datetime
 import TimeConverter
 import TradeDay
 
+import platform
 import SinaApp
 import TushareApp
 import Analyse
@@ -32,11 +33,18 @@ class hd_record:
     '''
     def __init__(self):        
         BASE = os.path.split(os.path.realpath(__file__))[0]
-        CFG_PATH = BASE + '\\Config'
-        OUT_PATH = BASE + '\\output'
-        self.hold_record_file = CFG_PATH+'\\hold_record.csv'
-        self.f_total = OUT_PATH + r'\AssetOverview.csv'
-        self.f_record = OUT_PATH + r'\HoldRecord_' #备注，此文件名必须加入时间后缀
+        if "Linux" == platform.system():
+            CFG_PATH = BASE + '/Config'
+            OUT_PATH = BASE + '/output'
+            self.hold_record_file = CFG_PATH+'/hold_record.csv'
+            self.f_total = OUT_PATH + r'/AssetOverview.csv'
+            self.f_record = OUT_PATH + r'/HoldRecord_' #备注，此文件名必须加入时间后缀
+        else:
+            CFG_PATH = BASE + '\\Config'
+            OUT_PATH = BASE + '\\output'
+            self.hold_record_file = CFG_PATH+'\\hold_record.csv'
+            self.f_total = OUT_PATH + r'\AssetOverview.csv'
+            self.f_record = OUT_PATH + r'\HoldRecord_' #备注，此文件名必须加入时间后缀
         self.get_user_record()
         
         self.ts = TushareApp.ts_app()
