@@ -9,6 +9,7 @@ import tushare as ts
 from datetime import datetime
 from datetime import timedelta
 import time
+import platform
 
 import os,sys
 BASE_DIR = os.path.split(os.path.realpath(__file__))[0] #cur excute dir
@@ -43,7 +44,10 @@ class ts_app:
         fields建议不要改动，自定义的字段请在append_table中添加
         '''
         self.log = True #关闭print语句
-        token_file = BASE_DIR+r'\Config\tushare_token.cfg'
+        if "Linux" == platform.system():
+            token_file = BASE_DIR+r'/Config/tushare_token.cfg'
+        else:
+            token_file = BASE_DIR+r'\Config\tushare_token.cfg'
         with open(token_file, 'r') as fh:
             content = fh.read()
         try:
