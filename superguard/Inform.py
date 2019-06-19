@@ -6,12 +6,17 @@ Created on Sat Jun 15 16:06:42 2019
 """
 import os
 import json
+import platform
 from twilio.rest import Client
 
 class Inform:
     def __init__(self):
         BASE_DIR = os.path.split(os.path.realpath(__file__))[0] #cur excute dir
-        cfg_file = BASE_DIR + r'\Config\twilio_para.json'
+        
+        if "Linux" == platform.system():
+            cfg_file = BASE_DIR + r'/Config/twilio_para.json'
+        else:
+            cfg_file = BASE_DIR + r'\Config\twilio_para.json'
         with open(cfg_file, 'r') as fh: #读取配置参数
             cfg = json.load(fh)
         self.phone_id = cfg['phone_id']

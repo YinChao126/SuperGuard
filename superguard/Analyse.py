@@ -14,6 +14,7 @@ import TimeConverter
 import IdConvert
 import Inform
 import TradeDay
+import platform
 
 import TushareApp
 import SinaApp
@@ -31,7 +32,10 @@ class Analyse:
         self.log = False #关闭log
         
         BASE = os.path.split(os.path.realpath(__file__))[0]
-        self.cfg_file = BASE + r'\Config\threshold.json' 
+        if "Linux" == platform.system():
+            self.cfg_file = BASE + r'/Config/threshold.json' 
+        else:
+            self.cfg_file = BASE + r'\Config\threshold.json' 
         self.rate_th = [] #涨跌幅阈值【下限，上限】
         self.turnover_th = [] #换手率阈值【下限，上限】
         self.price_est = [] #估值预警线【低估，高估】
