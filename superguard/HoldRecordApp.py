@@ -19,6 +19,7 @@ class hd_record:
     @类名： hd_record
     ---------------------------------------------------------------------------
     提供的API一览表：
+    GetUserStockList: 获取用户持仓个股的ID号
     HoldRecordAnalyse: 实现持仓完整分析，并自动更新数据库（暂时存为本地csv文件）
     ---------------------------------------------------------------------------
     
@@ -142,7 +143,7 @@ class hd_record:
         dividend_rate = round(bond_acc / total_asset * 100, 2)
 
         try:
-            records = pd.read_csv(self.f_total)
+            records = pd.read_csv(self.f_total, dtype=str)
         except:
             header = ['date','cost','asset','earn','earn_rate','sb_rate','divd_rate']
             records = pd.DataFrame(columns=header)
@@ -161,14 +162,17 @@ class hd_record:
                 }
         new_record = pd.DataFrame(data) #新增的一条记录
         records = pd.concat([records,new_record],axis=0)
-        records = records.drop_duplicates(subset=['asset','sb_rate'],keep='last') #去重，防止多次运行
+        
+        records = records.drop_duplicates(subset=['date'],keep='last') #去重，防止多次运行
         head = ['date','cost','asset','earn','earn_rate','sb_rate','divd_rate']
-        records = records.reindex(columns=head)       
+        records = records.reindex(columns=head)    
         records.to_csv(self.f_total, index = False)
         return data
         
 if __name__ == '__main__':
     app = hd_record()
-#    a = app.HoldRecordAnalyse()
+    #直接运行持仓分析APP
+    a = app.HoldRecordAnalyse()
     
-    a = app.GetUserStockList()
+    #获取用户持仓ID列表
+#    a = app.GetUserStockList()
