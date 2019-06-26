@@ -139,7 +139,7 @@ class hd_record:
 
         head = ['id','amount','divd_eps','unit_price','cur_price','est_price','earn_rate','bond_rate']
         single_record = single_record.reindex(columns=head)
-        single_file_name = self.f_record + now + 'r.csv'
+        single_file_name = self.f_record + now + '.csv'
         single_record.to_csv(single_file_name, index = False)
 
         #2. 总体分析
