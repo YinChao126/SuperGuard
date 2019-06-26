@@ -106,3 +106,4 @@ venv.bak/
 # user's define
 Config/
 output/
+nohup.out
