@@ -139,8 +139,8 @@ class hd_record:
 
         head = ['id','amount','divd_eps','unit_price','cur_price','est_price','earn_rate','bond_rate']
         single_record = single_record.reindex(columns=head)
-        self.f_record += now + r'.csv'
-        single_record.to_csv(self.f_record, index = False)
+        single_file_name = self.f_record + now + 'r.csv'
+        single_record.to_csv(single_file_name, index = False)
 
         #2. 总体分析
         # 先获取个股的当前股价、估值、股息率,再计算总资产、盈亏率、股债比、整体股息率
