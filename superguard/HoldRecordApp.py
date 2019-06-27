@@ -196,7 +196,7 @@ class hd_record:
                 'divd_rate':[dividend_rate]
                 }
         new_record = pd.DataFrame(data) #新增的一条记录
-        records = pd.concat([records,new_record],axis=0)
+        records = pd.concat([records,new_record],axis=0, sort=True)
         
         records = records.drop_duplicates(subset=['date'],keep='last') #去重，防止多次运行
         head = ['date','cost','asset','earn','earn_rate','sb_rate','divd_rate']
