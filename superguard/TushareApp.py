@@ -116,7 +116,7 @@ class ts_app:
             str_stop = str(stop) + '1231'
     #        print(str_start, str_stop)
             tmp = self.pro.query('fina_indicator', ts_code=ID, fields=self.fields, start_date=str_start, end_date=str_stop)
-            data = pd.concat([data, tmp], axis = 0)
+            data = pd.concat([data, tmp], axis = 0, sort=True)
             
         else:
             while (n - 5) >= 0: #一次性最多获取5年数据
@@ -125,7 +125,7 @@ class ts_app:
                 str_stop = str(stop) + '1231'
     #            print(str_start, str_stop)
                 tmp = self.pro.query('fina_indicator', ts_code=ID, fields=self.fields, start_date=str_start, end_date=str_stop)
-                data = pd.concat([data, tmp], axis = 0)
+                data = pd.concat([data, tmp], axis = 0,sort=True)
                 n -= 5
                 stop -= 5
             if n > 0:
@@ -136,7 +136,7 @@ class ts_app:
                 str_stop = str(stop) + '1231'
     #            print(str_start, str_stop)
                 tmp = self.pro.query('fina_indicator', ts_code=ID, fields=self.fields, start_date=str_start, end_date=str_stop)
-                data = pd.concat([data, tmp], axis = 0)
+                data = pd.concat([data, tmp], axis = 0,sort=True)
                     
         '''
         此处，data最多返回60条记录
@@ -146,7 +146,7 @@ class ts_app:
         for item in day_list:
             df_result = data[data.end_date == item]
             if df_result.empty == False:
-                new = pd.concat([new, df_result], axis = 0)
+                new = pd.concat([new, df_result], axis = 0, sort=True)
         
         new.drop_duplicates(subset=['end_date'],keep='first',inplace=True)
         new.index = range(len(new))

@@ -15,6 +15,7 @@ import SinaApp
 import TushareApp
 import Analyse
 import IdConvert
+import json
 
 class hd_record:
     '''
@@ -34,18 +35,23 @@ class hd_record:
     def __init__(self):        
         BASE = os.path.split(os.path.realpath(__file__))[0]
         if "Linux" == platform.system():
-            CFG_PATH = BASE + '/Config'
-            OUT_PATH = BASE + '/output'
-            self.hold_record_file = CFG_PATH+'/hold_record.csv'
+            CFG_PATH = BASE + r'/Config'
+            OUT_PATH = BASE + r'/output'
+            self.hold_record_file = CFG_PATH + r'/hold_record.csv'
+            self.f_record_cash = CFG_PATH + r'/hold_cash.json'
             self.f_total = OUT_PATH + r'/AssetOverview.csv'
             self.f_record = OUT_PATH + r'/HoldRecord_' #备注，此文件名必须加入时间后缀
         else:
-            CFG_PATH = BASE + '\\Config'
-            OUT_PATH = BASE + '\\output'
-            self.hold_record_file = CFG_PATH+'\\hold_record.csv'
+            CFG_PATH = BASE + r'\Config'
+            OUT_PATH = BASE + r'\output'
+            self.hold_record_file = CFG_PATH + r'\hold_record.csv'
+            self.f_record_cash = CFG_PATH + r'\hold_cash.json'
             self.f_total = OUT_PATH + r'\AssetOverview.csv'
             self.f_record = OUT_PATH + r'\HoldRecord_' #备注，此文件名必须加入时间后缀
-        self.get_user_record()
+
+        self.cash = 0 #账户现金
+        self.acc_earn = 0 #累积盈亏(已清算的)
+        self.get_user_record() #用户持仓DataFrame
         
         self.ts = TushareApp.ts_app()
         self.sina = SinaApp.SinaApp()
@@ -57,7 +63,11 @@ class hd_record:
         备注：该函数会在实例化类时自动调用，用户无需手动调用
         '''        
         self.hold_record = pd.read_csv(self.hold_record_file, dtype={'source':str,'target':str})
-
+        with open(self.f_record_cash, 'r') as fh:
+            data = json.load(fh)
+            self.cash = data['cash']
+            self.acc_earn = data['acc_earn']
+            
         #bug修复，csv文件读取后，会把002597变成3597
         idlist = self.hold_record['id']
         for i in range(len(idlist)):
@@ -160,8 +170,9 @@ class hd_record:
             if id_type < 2:
                 stock_acc += amount * cur_price
         total_cost = int(total_cost)
-        t_earn = total_asset - total_cost
-        t_earn_rate = int((total_asset - total_cost) / total_cost * 100)
+        t_earn = total_asset - total_cost #浮动盈亏
+        t_earn_rate = int(t_earn / total_cost * 100) #浮动盈亏率
+        t_earn_total = t_earn + self.acc_earn #总盈亏
         sb_rate = round((stock_acc / total_asset)*100,2)
         dividend_rate = round(bond_acc / total_asset * 100, 2)
 
@@ -173,12 +184,13 @@ class hd_record:
         if records.empty == True:
             print('empty')
         
+        t_asset = total_asset + self.cash #总资产为股票加现金
         date = TimeConverter.dday2str(datetime.now())
         data = {
                 'date':[date],
                 'cost':[total_cost],
-                'asset':[total_asset],
-                'earn':[t_earn],
+                'asset':[t_asset],
+                'earn':[t_earn_total],
                 'earn_rate':[t_earn_rate],
                 'sb_rate':[sb_rate],
                 'divd_rate':[dividend_rate]
