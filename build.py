@@ -8,7 +8,7 @@ if __name__ == '__main__':
     os.system(cmd)
     
     #2.拷贝Config文件夹
-    src_dir = BASE + '/doc/Config'
+    src_dir = BASE + '/doc/ConfigExample'
     dst_dir = BASE + '/superguard/Config'
     copy_tree(src_dir, dst_dir)
     

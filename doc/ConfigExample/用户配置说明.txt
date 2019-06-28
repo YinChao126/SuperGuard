@@ -1,0 +1,35 @@
+作者：尹超
+更新日期：2019-6-19
+
+描述：
+本文档用以介绍用户配置使用SuperGuard的流程
+
+特别注意：
+用户应该调用build.py进行自动构建，免去系统搭建的烦恼。
+如果手动配置，则必须在"./superguard/"目录下兴建一个Config目录，并将本文件夹的所有文件拷贝进去
+（Config目录本身并不会被git托管，所以可以放心自己的隐私安全）
+
+软件包依赖：
+1. twilio
+2. tushare
+
+配置：
+1. hold_record.csv中填入自己的持仓记录
+amount代表所持股数
+id为股票代码
+unit_price为每股成本价
+divd_eps为每股现金分红
+例如一条上汽集团的信息如下填写：
+amount  id      unit_price  divd_eps
+800	    600104	25.098	    1.26
+
+2. threashold.json设置自己的预警参数（用户只能更改参数内容）
+{
+  "rate_th":[-5, 6],      #跌幅超过5%或者涨幅超过6%，报警
+  "quant_th":3,           #量比超过3，报警
+  "price_est":[-0.2,0.3]  #低估超过20%或者高估超过30%，报警
+}
+
+3. tushare_token填入tushare的开发token
+
+4. twilio_para.json中填入twilio开发账号
