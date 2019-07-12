@@ -156,7 +156,8 @@ class hd_record:
         # 先获取个股的当前股价、估值、股息率,再计算总资产、盈亏率、股债比、整体股息率
         total_cost = 0 #总成本
         total_asset = 0 #总资产
-        stock_acc = 0 #股票总资产
+        hold_asset = 0 #持仓
+        stock_acc = 0 #股票总资产(不包括债券)
         bond_acc = 0 #累积现金分红
         for i in range(len(single_record)):
             amount = single_record.iloc[i]['amount']
@@ -164,18 +165,18 @@ class hd_record:
             cur_price = single_record.iloc[i]['cur_price']
             bond_acc += single_record.iloc[i]['divd_eps'] * amount
             total_cost += amount * unit_price
-            total_asset += amount * cur_price
+            hold_asset += amount * cur_price
             str_id = str(single_record.iloc[i]['id'])
             id_type = IdConvert.get_id_type(str_id)
-            if id_type < 2:
+            if id_type < 2: #此处为股票和债券的判断，还有缺陷！请仔细对比get_id_type函数
                 stock_acc += amount * cur_price
-        total_cost = int(total_cost)
-        t_earn = total_asset - total_cost #浮动盈亏
+                
+        t_earn = hold_asset - total_cost #浮动盈亏
         t_earn_total = t_earn + self.acc_earn #总盈亏
         t_earn_rate = int(t_earn / total_cost * 100) #浮动盈亏率
         t_earn_rate = int(t_earn_total / total_cost * 100) #总盈亏率
-        sb_rate = round((stock_acc / total_asset)*100,2)
-        dividend_rate = round(bond_acc / total_asset * 100, 2)
+        sb_rate = round((stock_acc / hold_asset)*100,2)
+        dividend_rate = round(bond_acc / hold_asset * 100, 2)
 
         try:
             records = pd.read_csv(self.f_total, dtype=str)
@@ -185,16 +186,16 @@ class hd_record:
         if records.empty == True:
             print('empty')
         
-        t_asset = total_asset + self.cash #总资产为股票加现金
+        total_asset = hold_asset + self.cash #总资产为股票加现金
         
-        hold_rate = round(total_asset / t_asset * 100, 2) #持仓比例
+        hold_rate = round(hold_asset / total_asset * 100, 2) #持仓比例
         date = TimeConverter.dday2str(datetime.now())
         data = {
                 'date':[date],
-                'cost':[total_cost],
-                'asset':[t_asset],
-                'earn':[t_earn_total],
-                'earn_rate':[t_earn_rate],
+                'cost':[int(total_cost)],
+                'asset':[int(total_asset)],
+                'earn':[int(t_earn_total)],
+                'earn_rate':[int(t_earn_rate)],
                 'hold_rate':[hold_rate],
                 'sb_rate':[sb_rate],
                 'divd_rate':[dividend_rate]
