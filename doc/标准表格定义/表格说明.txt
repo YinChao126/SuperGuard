@@ -6,7 +6,18 @@
 
 表名：AssetOverview 
 描述：总资产概览表（有且只有这一个表！）
-内容：总资产、盈亏率、股债比、股息率
+用户通过该表可以快速追踪资产的整体成长情况
+同时可以根据股债比、仓位、股息率来判断组合的健康程度
+
+表头定义：
+date: 日期
+cost: 总成本
+asset: 当前总资产（持仓+现金）
+earn: 总盈亏（浮盈+历史盈亏）
+earn_rate: 资产总收益率
+hold_rate: 仓位
+sb_rate: 股债比
+divd_rate: 整体股息率
 
 
 表名：HoldRecord_xxxxxxxx 

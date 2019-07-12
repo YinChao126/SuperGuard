@@ -186,6 +186,8 @@ class hd_record:
             print('empty')
         
         t_asset = total_asset + self.cash #总资产为股票加现金
+        
+        hold_rate = round(total_asset / t_asset * 100, 2) #持仓比例
         date = TimeConverter.dday2str(datetime.now())
         data = {
                 'date':[date],
@@ -193,6 +195,7 @@ class hd_record:
                 'asset':[t_asset],
                 'earn':[t_earn_total],
                 'earn_rate':[t_earn_rate],
+                'hold_rate':[hold_rate],
                 'sb_rate':[sb_rate],
                 'divd_rate':[dividend_rate]
                 }
@@ -200,7 +203,7 @@ class hd_record:
         records = pd.concat([records,new_record],axis=0, sort=True)
         
         records = records.drop_duplicates(subset=['date'],keep='last') #去重，防止多次运行
-        head = ['date','cost','asset','earn','earn_rate','sb_rate','divd_rate']
+        head = ['date','cost','asset','earn','earn_rate','hold_rate','sb_rate','divd_rate']
         records = records.reindex(columns=head)    
         records.to_csv(self.f_total, index = False)
         return data
