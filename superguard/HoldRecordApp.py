@@ -171,8 +171,9 @@ class hd_record:
                 stock_acc += amount * cur_price
         total_cost = int(total_cost)
         t_earn = total_asset - total_cost #浮动盈亏
-        t_earn_rate = int(t_earn / total_cost * 100) #浮动盈亏率
         t_earn_total = t_earn + self.acc_earn #总盈亏
+        t_earn_rate = int(t_earn / total_cost * 100) #浮动盈亏率
+        t_earn_rate = int(t_earn_total / total_cost * 100) #总盈亏率
         sb_rate = round((stock_acc / total_asset)*100,2)
         dividend_rate = round(bond_acc / total_asset * 100, 2)
 
