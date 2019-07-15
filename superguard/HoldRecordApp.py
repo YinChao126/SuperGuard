@@ -173,6 +173,8 @@ class hd_record:
                 
         t_earn = hold_asset - total_cost #浮动盈亏
         t_earn_total = t_earn + self.acc_earn #总盈亏
+        total_asset = hold_asset + self.cash #总资产为股票加现金
+        total_cost = total_asset - t_earn_total #实际成本 = 总资产 - 总盈亏
         t_earn_rate = int(t_earn / total_cost * 100) #浮动盈亏率
         t_earn_rate = int(t_earn_total / total_cost * 100) #总盈亏率
         sb_rate = round((stock_acc / hold_asset)*100,2)
@@ -186,7 +188,6 @@ class hd_record:
         if records.empty == True:
             print('empty')
         
-        total_asset = hold_asset + self.cash #总资产为股票加现金
         
         hold_rate = round(hold_asset / total_asset * 100, 2) #持仓比例
         date = TimeConverter.dday2str(datetime.now())
