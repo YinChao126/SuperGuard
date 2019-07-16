@@ -89,7 +89,7 @@ def CreatePage():
                     opts.RadarIndicatorItem(name="earn_rate", max_=para['earn_rate']),
                     opts.RadarIndicatorItem(name="sb_rate", max_=para['sb_rate']),
                     opts.RadarIndicatorItem(name="hold_rate", max_=para['hold_rate']),
-                    opts.RadarIndicatorItem(name="β", max_=para['β']),
+                    opts.RadarIndicatorItem(name="beta", max_=para['beta']),
                     opts.RadarIndicatorItem(name="divd_rate", max_=para['divd_rate']),
                 ]
             )
@@ -118,4 +118,4 @@ def index3():
     page = PlotRadar()
     return Markup(page.render_embed())
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0')
