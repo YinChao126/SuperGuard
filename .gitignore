@@ -107,3 +107,4 @@ venv.bak/
 Config/
 output/
 nohup.out
+display.out
