@@ -37,6 +37,13 @@ hushi_prefix = ['600','601','603','019','510'] #上海证券前缀
 shenshi_prefix = ['000','002','300','159'] #深圳证券前缀
 stock_hu = ['600','601','603'] #上海A股前缀
 stock_sz = ['000','002','300'] #深圳A股前缀
+stock_like_bond = ['600377'] #可被视为低等级债券的股票，用于计算股债比时将其划为债券类
+
+SH_STOCK = 0
+SZ_STOCK = 1
+BOND = 2
+INDEX = 3
+FUND = 4
 
 def front2id(id):
     '''
@@ -94,31 +101,33 @@ def get_id_type(id):
     sub_type = sub_type.upper() #转大写
     
     if sub_type == 'SH':
+        if code in stock_like_bond:
+            return BOND
         prefix = code[:3]
         if prefix in stock_hu:
-            return 0
+            return SH_STOCK
         elif prefix == '000':
-            return 3
+            return INDEX
         elif prefix == '500' or prefix == '510':
-            return 4
+            return FUND
         else: #其余全是债券
-            return 2 
+            return BOND 
         
     elif sub_type == 'SZ':
         prefix = code[:3]
         if prefix in stock_sz:
-            return 1
+            return SZ_STOCK
         elif prefix == '159':
-            return 4
+            return FUND
         else: #其余全是债券
-            return 2 
+            return BOND 
     else:
         print('股票id输入非法')
     return 1
 
 if __name__ == '__main__':
-    str_id = '600660'
+    str_id = '600377'
     print(str_id)
     print(tail2id(str_id))
     print(front2id(str_id))
-    print(get_id_type('019536.SH'))
+    print(get_id_type(str_id))
