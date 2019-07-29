@@ -28,7 +28,7 @@ def PlotLine():
     app.add_yaxis("asset", list(df['asset']), is_smooth=True)
     app.add_yaxis("earn", list(df['earn']), is_smooth=True)
     app.set_global_opts(title_opts=opts.TitleOpts(title="asset overview"))
-    app.render()
+    #app.render()
     return app
 
 def PlotRadar():
@@ -48,14 +48,14 @@ def PlotRadar():
                     opts.RadarIndicatorItem(name="earn_rate", max_=para['earn_rate']),
                     opts.RadarIndicatorItem(name="sb_rate", max_=para['sb_rate']),
                     opts.RadarIndicatorItem(name="hold_rate", max_=para['hold_rate']),
-                    opts.RadarIndicatorItem(name="β", max_=para['β']),
+                    opts.RadarIndicatorItem(name="beta", max_=para['beta']),
                     opts.RadarIndicatorItem(name="divd_rate", max_=para['divd_rate']),
                 ]
             )
     app.add("实时参数", v1)
     app.set_series_opts(label_opts=opts.LabelOpts(is_show=False))
     app.set_global_opts(title_opts=opts.TitleOpts(title="持仓分析"))
-    app.render()
+    #app.render()
     return app
 
 def CreatePage():
@@ -103,7 +103,7 @@ def CreatePage():
 CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("./templates"))
 
 app = Flask(__name__, static_folder="templates")
-@app.route("/")
+@app.route("/total/")
 def index():
     page = CreatePage()
     return Markup(page.render_embed())
@@ -113,7 +113,7 @@ def index2():
     page = PlotLine()
     return Markup(page.render_embed())
 
-@app.route("/hold/")
+@app.route("/")
 def index3():
     page = PlotRadar()
     return Markup(page.render_embed())
