@@ -83,7 +83,7 @@ def PlotPie():
     pie_chart = Pie()
     pie_chart.add("", [list(z) for z in zip(attr, data)])
     pie_chart.set_colors(["red", "blue", "orange",  "green","pink", "purple"])
-    pie_chart.set_global_opts(title_opts=opts.TitleOpts(title="持股成分比"))
+    pie_chart.set_global_opts(title_opts=opts.TitleOpts(title="持仓成分比"))
     pie_chart.set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c}"))
 #    pie_chart.render()
     return pie_chart
@@ -130,7 +130,13 @@ def PlotRadar():
     #radar_chart.render()
     return radar_chart
 
-def CreatePage():
+def CreateBasic():
+    page = Page()
+    page.add(PlotRadar())
+    page.add(PlotPie())
+    return page 
+    
+def CreateTotal():
     page = Page()
     page.add(PlotLine())
     page.add(PlotRadar())
@@ -145,12 +151,12 @@ app = Flask(__name__, static_folder="templates")
 
 @app.route("/")
 def index0():
-    page = PlotRadar()
+    page = CreateBasic()
     return Markup(page.render_embed())
 
 @app.route("/total/")
 def index1():
-    page = CreatePage()
+    page = CreateTotal()
     return Markup(page.render_embed())
 
 # 下面仅供调试
