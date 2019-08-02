@@ -120,7 +120,6 @@ class SinaApp:
         url = url[:-1]
         page = str(urllib.request.urlopen(url).read())
         data = page.split(';')
-        
         cur_open = []
         cur_price = []
         high = []
@@ -136,7 +135,7 @@ class SinaApp:
             p_high = info[4]
             p_low = info[5]
             p_vol = str(int(float(info[8])))
-            p_time = info[-2]
+            p_time = info[-3]
             r = round(((float(p_cur) - float(p_open)) / float(p_open))*100, 2)
             r = str(r)
             cur_open.append(p_open)
@@ -440,7 +439,8 @@ if __name__ == '__main__':
     print(a)
     
 #    #批量获取实时交易数据
-#    test.RtData(['sh601012'])
+#    a = test.RtData(['sh601012'])
+#    print(a)
     
 #    test.update_one('sh510300')
 #    
