@@ -168,7 +168,7 @@ class hd_record:
             hold_asset += amount * cur_price
             str_id = str(single_record.iloc[i]['id'])
             id_type = IdConvert.get_id_type(str_id)
-            if id_type < 2: #此处为股票和债券的判断，还有缺陷！请仔细对比get_id_type函数
+            if id_type != IdConvert.BOND: #此处为股票和债券的判断，还有缺陷！请仔细对比get_id_type函数
                 stock_acc += amount * cur_price
                 
         t_earn = hold_asset - total_cost #浮动盈亏
