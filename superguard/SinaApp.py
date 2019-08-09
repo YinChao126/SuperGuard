@@ -75,6 +75,7 @@ class SinaApp:
         today_vol = self.RtData([str_id])
         cur_time = today_vol.iloc[0]['time']
         today_vol = today_vol.iloc[0]['vol']
+        
         t = cur_time.split(':')
         cur_second = int(t[0]) * 60 + int(t[1]) - 570
         if cur_second > 120 and cur_second <= 210: #中午午休
@@ -120,6 +121,7 @@ class SinaApp:
         url = url[:-1]
         page = str(urllib.request.urlopen(url).read())
         data = page.split(';')
+#        print(page)
         cur_open = []
         cur_price = []
         high = []
@@ -129,13 +131,13 @@ class SinaApp:
         cur_time = []
         
         for i in range(len(data)-1):
+            p_time = re.search('\d\d:\d\d:\d\d',data[i])
             info = data[i].split(',')
             p_open = info[1]
             p_cur = info[3]
             p_high = info[4]
             p_low = info[5]
             p_vol = str(int(float(info[8])))
-            p_time = info[-3]
             r = round(((float(p_cur) - float(p_open)) / float(p_open))*100, 2)
             r = str(r)
             cur_open.append(p_open)
@@ -144,7 +146,7 @@ class SinaApp:
             low.append(p_low)
             rate.append(r)
             vol.append(p_vol)
-            cur_time.append(p_time)
+            cur_time.append(p_time.group(0))
         data = {
                 'id':str_id_list,
                 'open':cur_open,
@@ -436,6 +438,8 @@ if __name__ == '__main__':
     
 #    获取实时量比
     a = test.RtQuant(str_id)
+    print(a)
+    a = test.RtQuant('sz000651')
     print(a)
     
 #    #批量获取实时交易数据
