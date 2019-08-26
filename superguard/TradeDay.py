@@ -55,16 +55,18 @@ def get_day_type(query_date):
     '''
     url = 'http://tool.bitefu.net/jiari/?d=' + query_date  
     resp = request.urlopen(url)  
-    content = resp.read()  
-    if content:  
-        try:  
-            day_type = int(content)  
-        except ValueError:  
-            return -1  
-        else:  
-            return day_type  
-    else:  
-        return -1  
+    try:
+        content = resp.read().decode('utf-8')
+        if '0' in content:
+            return 0
+        elif '1' in content:
+            return 1
+        elif '2' in content:
+            return 2
+        else:
+            return -2
+    except:
+        return -1
 
 ###############################################################################
 def isWorkingTime():
@@ -97,12 +99,13 @@ def _is_tradeday(query_date):
     辅助函数
     判断给定日期是否股市交易日（考虑了节假日的影响）
     '''
-    weekday = datetime.strptime(query_date, '%Y%m%d').isoweekday()  
+    weekday = datetime.strptime(query_date, '%Y%m%d').isoweekday() 
     if weekday <= 5 and get_day_type(query_date) == 0:  
         return True  
     else:  
         return False  
   
 if __name__ == '__main__':  
-    print(_is_tradeday('20171229'))  
+    print(_is_tradeday('20190824'))  
     print(is_tradeday()) 
+    
