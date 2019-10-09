@@ -19,9 +19,9 @@ task_record_analyse = threading.Thread(target=hd.InfiniteHoldRecordAnalyse)
 task_record_analyse.start()
 print('成功创建持仓分析线程')
 
-task_guard = threading.Thread(target=aly.AlarmGuard, args=[raw_record])
-task_guard.start()
-print('成功创建实时预警线程')
+#task_guard = threading.Thread(target=aly.AlarmGuard, args=[raw_record])
+#task_guard.start()
+#print('成功创建实时预警线程')
 
 
 try:
